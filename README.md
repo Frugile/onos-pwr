@@ -7,4 +7,4 @@
 
 ---
 
-*by Filip Dratwińsk, Karol Gawron, Piotr Gramacki, Maksym Telepchuk*
+*by Filip Dratwiński, Karol Gawron, Piotr Gramacki, Maksym Telepchuk*
