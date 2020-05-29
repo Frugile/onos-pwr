@@ -14,13 +14,13 @@
   },
   "legend": {
     "edgeLabel": "Cite",
-    "colorLabel": "",
+    "colorLabel": "Department",
     "nodeLabel": "Author"
   },
   "features": {
-    "search": true,
-    "groupSelectorAttribute": "Modularity Class",
-    "hoverBehavior": "dim"
+    "search": false,
+    "groupSelectorAttribute": "wydzial",
+    "hoverBehavior": "default"
   },
   "informationPanel": {
     "groupByEdgeDirection": false,
