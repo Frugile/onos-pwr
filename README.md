@@ -7,7 +7,7 @@
 [Podgrupowanie wg. modularity class a wydziały](https://frugile.github.io/onos-pwr-cite/network-deps/)
 
 <a href="https://frugile.github.io/onos-pwr-cite/network-deps/">
-  <img src="imgs/modualrity_vs_departments.png" alt="modularity class a wydziały" width="400">
+  <img src="imgs/modualrity_vs_departments_black.png" alt="modularity class a wydziały" width="400">
 </a>
 
 ---
