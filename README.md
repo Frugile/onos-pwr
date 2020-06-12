@@ -1,4 +1,5 @@
 ---
+permalink: //
 ---
 
 ## Analiza sieci cytowań pracowników PWr
