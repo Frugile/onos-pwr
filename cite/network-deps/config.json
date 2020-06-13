@@ -9,7 +9,7 @@
   },
   "text": {
     "more": "Sieć cytowań pracowników Politechniki Wrocławskiej ; Źródło danych: Scopus ; Wykonano przez: Filip Dratwińsk,\nKarol Gawron, Piotr Gramacki, Maksym Telepchuk\n",
-    "intro": "Wierzchołki zgrupowane wg. modularity class; kolory wg. wydziałów",
+    "intro": "Wierzchołki zgrupowane wg. modularity class (wg. metody Louvain); kolory wg. wydziałów",
     "title": "Cytowania PWr"
   },
   "legend": {
