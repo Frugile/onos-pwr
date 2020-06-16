@@ -1,0 +1,248 @@
+<html>
+
+<head>
+    <script>
+        GRAPH_NAME='graph_general.json';
+        // LEGEND_NAME='legend.png'; Work in progress
+
+        SCALE = 0.01; // Change it if after searching & centering on a person zoom will be too large / too small
+    </script>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WrUST | Coautorship Network</title>
+
+    <!-- MD light -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
+    <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+
+    <!-- Fonts to support Material Design -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
+    <!-- Icons to support Material Design -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+
+    <!-- local style -->
+    <link rel="stylesheet" href="../style.css" />
+
+</head>
+
+<body>
+    <div class="mdl-layout mdl-js-layout mdl-layout--fixed-drawer">
+        <div class="mdl-layout__drawer">
+            <span id="drawer-title" class="mdl-layout-title">WUST | Network</span>
+            <div class="person-search">
+                <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                    <input id='person' class="mdl-textfield__input" type="text" id="sample3">
+                    <label class="mdl-textfield__label" for="sample3">Find person</label>
+                </div>
+
+                <button class="mdl-button mdl-js-button mdl-button--icon" onclick="extract_search()">
+                    <i class="material-icons">search</i>
+                </button>
+            </div>
+            <nav id="search-results" class="mdl-navigation">
+            </nav>
+            <nav id="parameters" class="mdl-navigation">
+            </nav>
+        </div>
+        <main class="mdl-layout__content">
+            <div class="page-content">
+                <div class="content" id="container"></div>
+            </div>
+        </main>
+    </div>
+
+    <img class="wrust-legend" src="../legends/legend.svg" />
+
+
+    <script src="../js/sigma.min.js"></script>
+    <script src="../js/plugins/sigma.parsers.json.min.js"></script>
+    <script>
+        sigma.classes.graph.addMethod('neighbors', function (nodeId) {
+            var k,
+                neighbors = {},
+                index = this.allNeighborsIndex[nodeId] || {};
+
+            for (k in index)
+                neighbors[k] = this.nodesIndex[k];
+
+            return neighbors;
+        });
+
+        var camera = null;
+        var sigmaInst = null;
+
+        sigma.parsers.json(`../data/${GRAPH_NAME}`, {
+            container: 'container',
+            settings: {
+                defaultNodeColor: '#ec5148',
+                zoomMin: 0.001,
+                labelSize: 'proportional',
+                defaultNodeBorderColor: "#000",
+                borderSize: 1,
+                hideEdgesOnMove: true,
+                labelSizeRatio: 0.8,
+                defaultLabelSize: 5,
+                webglOversamplingRatio: 1,
+                minEdgeSize: 0.1,
+                maxEdgeSize: 2,
+                minNodeSize: 0.000001,
+                maxNodeSize: 8,
+                labelThreshold: 8,
+            }
+        },
+            function (s) {
+                sigmaInst = s;
+
+                // We first need to save the original colors of our
+                // nodes and edges, like this:
+                s.graph.nodes().forEach(function (n) {
+                    n.originalColor = n.color;
+                });
+                s.graph.edges().forEach(function (e) {
+                    e.originalColor = e.color;
+                });
+
+                camera = s.cameras[0];
+                console.log(camera);
+
+                // When a node is clicked, we check for each node
+                // if it is a neighbor of the clicked one. If not,
+                // we set its color as grey, and else, it takes its
+                // original color.
+                // We do the same for the edges, and we only keep
+                // edges that have both extremities colored.
+                s.bind('clickNode', function (e) {
+                    console.log(camera.ratio);
+                    var nodeId = e.data.node.id,
+                        toKeep = s.graph.neighbors(nodeId);
+                    toKeep[nodeId] = e.data.node;
+
+                    s.graph.nodes().forEach(function (n) {
+                        if (toKeep[n.id])
+                            n.color = n.originalColor;
+                        else
+                            n.color = '#eee';
+                    });
+
+                    console.log(s.graph.nodes())
+
+                    s.graph.edges().forEach(function (e) {
+                        if (toKeep[e.source] && toKeep[e.target])
+                            e.color = e.originalColor;
+                        else
+                            e.color = '#eee';
+                    });
+
+                    // Since the data has been modified, we need to
+                    // call the refresh method to make the colors
+                    // update effective.
+                    s.refresh();
+
+                    display_person(nodeId, false);
+                });
+
+                // When the stage is clicked, we just color each
+                // node and edge with its original color.
+                s.bind('rightClick', function (e) {
+                    s.graph.nodes().forEach(function (n) {
+                        n.color = n.originalColor;
+                    });
+
+                    s.graph.edges().forEach(function (e) {
+                        e.color = e.originalColor;
+                    });
+
+                    // Same as in the previous event:
+                    s.refresh();
+                });
+            }
+        );
+    </script>
+    <script>
+        function prettifyAttributeName(string) {
+            let capitalized = string.charAt(0).toUpperCase() + string.slice(1);
+
+            return capitalized.replace("_", " ");
+        }
+
+        function produce_person_link(id, label, color) {
+            return `<a class="mdl-navigation__link" onclick="display_person(${id})"><i class="material-icons" style="color: ${color}; margin-right: 0.5rem">account_box</i>${label}</a>`
+        }
+
+        function produce_person_attribute(key, value) {
+            return `<a class="mdl-navigation__link"><strong style="margin-right: 1rem;">${prettifyAttributeName(key)}: </strong>${value}</a>`
+        }
+
+        function produce_links(search_results) {
+            return search_results.reduce((result, elem) => {
+                return result + produce_person_link(elem[0], elem[1], elem[2]);
+            }, "");
+        }
+
+        function produce_attributes(attributes) {
+            return Object.entries(attributes).reduce((result, elem) => {
+                return result + produce_person_attribute(elem[0], elem[1]);
+            }, "");
+        }
+
+        function display_person(id, move_camera = true) {
+            let search_results = document.getElementById("search-results");
+            let parameters = document.getElementById("parameters");
+            let title = document.getElementById("drawer-title");
+
+            nodesList = sigmaInst.graph.nodes();
+
+            let entry = Object.entries(nodesList).find(entry => {
+                let entry_id = entry[1]['id'];
+
+                return id == entry_id;
+            });
+
+            let attributes = entry[1]['attributes']
+
+            search_results.style.display = 'none';
+            parameters.style.display = 'block';
+            title.innerText = entry[1]['label'];
+            parameters.innerHTML = produce_attributes(attributes);
+
+            if (move_camera) {
+                camera.goTo({
+                    'x': entry[1]['read_cam0:x'],
+                    'y': entry[1]['read_cam0:y'],
+                    'ratio': SCALE,
+                    'angle': 0
+                });
+            }
+        }
+
+        function extract_search() {
+            let search = document.getElementById("person").value;
+            let search_results = document.getElementById("search-results");
+            let parameters = document.getElementById("parameters");
+            let title = document.getElementById("drawer-title");
+
+            nodesList = sigmaInst.graph.nodes();
+ 
+            let entries = []
+            Object.entries(nodesList).forEach(entry => {
+                let id = entry[1]['id'];
+                let label = entry[1]['label'];
+                let color = entry[1]['originalColor']
+
+                if (label.toLowerCase().includes(search.toLowerCase())) {
+                    entries.push([id, label, color])
+                }
+            });
+
+            search_results.style.display = 'block';
+            parameters.style.display = 'none';
+            title.innerText = 'WUST | Network'
+            search_results.innerHTML = produce_links(entries);
+ 
+        }
+    </script>
+</body>
+
+</html>
