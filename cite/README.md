@@ -1,6 +1,8 @@
 ## Analiza sieci cytowań pracowników PWr
 
-[Pogrupowana sieć](https://frugile.github.io/onos-pwr/cite/network/)
+[Plakat projektu](https://frugile.github.io/onos-pwr/cite/PWr%20cite%20-%20poster.pdf)
+
+[Sieć pogrupowana wg. metody Louvain](https://frugile.github.io/onos-pwr/cite/network/)
 
 [Kliki w sieci](https://frugile.github.io/onos-pwr/cite/network-clique/)
 
